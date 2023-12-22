@@ -1,7 +1,7 @@
 Game Name: Jumper
 
 目錄結構
-
+'''
 ├── assets
 │   ├── Image --> 圖片資源
 │   │   ├── champion.png
@@ -85,3 +85,4 @@ Game Name: Jumper
 │           ├── engine.json
 │           └── project.json
 └── tsconfig.json
+'''
