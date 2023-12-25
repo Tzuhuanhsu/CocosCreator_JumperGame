@@ -1,7 +1,8 @@
 
-import { _decorator, Component, EventMouse, Node, Vec3 } from 'cc';
+import { _decorator, Component, EventMouse, Vec3 } from 'cc';
 import { Jumper } from './Jumper';
-import * as cc from "cc"
+import * as cc from "cc";
+
 const { ccclass, property } = _decorator;
 const Default_Move_Time = 0.5;
 //預設血量
@@ -65,15 +66,12 @@ export class Player extends Component
     //game start
     onGameStart()
     {
-        cc.input.on(cc.Input.EventType.MOUSE_UP, this.onMouseUp, this);
-        cc.input.on(cc.Input.EventType.MOUSE_DOWN, this.onMouseDown, this);
-
-
+        this.moveState = MoveState.Idle;
     }
     onGameEnd()
     {
-        cc.input.off(cc.Input.EventType.MOUSE_UP);
-        cc.input.off(cc.Input.EventType.MOUSE_DOWN);
+        // cc.input.off(cc.Input.EventType.MOUSE_UP);
+        // cc.input.off(cc.Input.EventType.MOUSE_DOWN);
         this.moveState = MoveState.End;
     }
 
@@ -109,10 +107,7 @@ export class Player extends Component
         const left: number = 0
         const right: number = 2
         this.moveState = MoveState.End;
-        if (event.getButton() === left)
-        {
-            this.jumper.jumpByStep(2);
-        }
+        this.jumper.jumpByStep(2);
     }
 
     //Mouse down
@@ -121,11 +116,7 @@ export class Player extends Component
         const left: number = 0
         const right: number = 2
         this.moveState = MoveState.Idle;
-        if (event.getButton() === left)
-        {
-            this.moveByStep(1);
-        }
-
+        this.moveByStep(1);
     }
 
     moveByStep(step: number)

@@ -35,7 +35,7 @@ export class GameMgr extends cc.Component
     @property({ type: cc.Node, tooltip: "Game end menu" }) gameEndMenu: cc.Node;
     @property({ type: cc.Button, tooltip: "Restart game button" }) restartGameButton: cc.Button;
     @property({ type: cc.Camera, tooltip: "game camera" }) gameCamera: cc.Camera;
-
+    @property({ type: cc.UITransform, tooltip: "click node" }) clickNode: cc.UITransform;
     // 遊戲狀態機
     private gameStateMachine: FiniteState = new FiniteState(GameState.Idle);
     // 起點位置
@@ -51,6 +51,7 @@ export class GameMgr extends cc.Component
             this.floorLength = MIN_FLOOR_LENGTH;
         this.gameEndMenu.active = false;
         this.gameCamera.node.active = false;
+        this.clickNode.setContentSize(cc.view.getDesignResolutionSize())
     }
     update(deltaTime: number)
     {
@@ -74,6 +75,7 @@ export class GameMgr extends cc.Component
                     this.player.onGameStart();
                 if (this.player.MoveState == MoveState.Moving || this.player.IsJump)
                     this.checkMoveBorder();
+                //計時 and 確認邊界
                 this.countTime();
                 this.checkFloorWithPlayer();
                 break;
@@ -149,6 +151,8 @@ export class GameMgr extends cc.Component
                 });
             })
             .start();
+        this.clickNode.node.off(cc.Node.EventType.TOUCH_START);
+        this.clickNode.node.off(cc.Node.EventType.TOUCH_END);
         this.player.onGameEnd();
     }
 
@@ -178,6 +182,8 @@ export class GameMgr extends cc.Component
         this.generateFloor();
         this.gameStateMachine.NextState = GameState.Play;
         this.countTimer.string = `Time:${this.getCountTimeFormat(0)}`;
+        this.clickNode.node.on(cc.Node.EventType.TOUCH_START, this.player.onMouseDown.bind(this.player));
+        this.clickNode.node.on(cc.Node.EventType.TOUCH_END, this.player.onMouseUp.bind(this.player));
     }
     /**
      * 產生地板
