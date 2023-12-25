@@ -1,0 +1,99 @@
+pipeline
+{
+    agent any
+    parameters
+    {
+        booleanParam(name:"isDebug", defaultValue:false,description:"是否為Debug")
+        choice(name:"EnvType", choices:['Web', 'Android', 'iOS'],description:"編譯版本")
+    }
+    environment
+    {
+        dir = "/Users/richard/Desktop/cocosCreator/JumperGame"
+        cocos_engine = "/Applications/CocosCreator/Creator/3.4.2/CocosCreator.app/Contents/MacOS/CocosCreator"
+        web_configPath = "/Users/richard/Desktop/cocosCreator/JumperGame/build/buildConfig_web-mobile.json"
+        isSuccess = false;
+    }
+    stages
+    {
+        stage('Cocos creator build')
+        {
+            steps
+            {
+                dir(env.dir)
+                {
+                    script
+                    {
+                        compileSuccess = false
+                        println "dir = ${dir}\ncocos engin = ${cocos_engine}   ${params.EnvType}"
+                        if( params.EnvType=='Web')
+                        {
+                            status = sh(
+                                    script:'${cocos_engine}  --project . --build "configPath=${web_configPath};"',
+                                    returnStatus: true
+                                )
+                            if (status == 36)
+                            {
+                                compileSuccess = true
+                            }
+                        }
+                        else
+                        {
+                            print("尚未支援該 Type ${params.EnvType}")
+                            env.isSuccess = true
+                            compileSuccess = true
+                            return
+                          
+                        }
+                    }
+                }
+            }
+        }
+        stage("Native compile")
+        {
+            steps
+            {
+                dir(env.dir)
+                {
+                    script
+                    {
+                        if( params.EnvType=='Web')
+                        {
+                            print("pass native compile")
+                            return
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
+    post
+    {
+        always
+        {
+            //刪除暫存資料夾
+            dir("${dir}@tmp") {
+                deleteDir()
+            }
+            script
+            {
+    
+                if(params.isDebug==true)
+                {
+                    println "DebugMode"
+                }
+              
+                if(compileSuccess==true)
+                {
+                     error("build error")
+                }
+                else
+                {
+                    error("build error")
+                }
+    
+            }
+            
+        }
+    }
+}

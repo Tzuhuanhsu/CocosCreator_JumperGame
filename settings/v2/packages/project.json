@@ -3,5 +3,10 @@
   "script": {
     "useDefineForClassFields": false,
     "allowDeclareFields": false
+  },
+  "physics": {
+    "gravity": {
+      "y": 0
+    }
   }
 }
