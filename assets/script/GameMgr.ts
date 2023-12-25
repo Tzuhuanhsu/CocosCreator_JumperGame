@@ -51,7 +51,7 @@ export class GameMgr extends cc.Component
             this.floorLength = MIN_FLOOR_LENGTH;
         this.gameEndMenu.active = false;
         this.gameCamera.node.active = false;
-        this.clickNode.setContentSize(cc.view.getDesignResolutionSize())
+        this.clickNode.setContentSize(cc.size(cc.view.getDesignResolutionSize().width * 2, cc.view.getDesignResolutionSize().height));
     }
     update(deltaTime: number)
     {
@@ -107,9 +107,11 @@ export class GameMgr extends cc.Component
     // 遊戲開始
     private onGamePlay()
     {
+        this.clickNode.node.active = true;
         this.player.node.active = true;
         this.gameCamera.node.active = true;
         this.gameStartLabelOpacity.node.active = true;
+        this.gameEndMenu.active = false;
         this.gameAnimation.play(GAME_START_ACTION);
         this.gameAnimation.once(cc.Animation.EventType.FINISHED, () =>
         {
@@ -139,6 +141,7 @@ export class GameMgr extends cc.Component
     {
         this.gameStartLabelOpacity.opacity = 255;
         this.gameAnimation.play(GAME_START_ACTION);
+
         cc.tween(this.gameStartLabelOpacity.node)
             .to(1, { worldPosition: this.player.node.getWorldPosition() })
             .call(() =>
@@ -151,6 +154,7 @@ export class GameMgr extends cc.Component
                 });
             })
             .start();
+        this.clickNode.node.active = false;
         this.clickNode.node.off(cc.Node.EventType.TOUCH_START);
         this.clickNode.node.off(cc.Node.EventType.TOUCH_END);
         this.player.onGameEnd();
