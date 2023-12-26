@@ -38,15 +38,18 @@
     "_components": [
       {
         "__id__": 40
+      },
+      {
+        "__id__": 42
       }
     ],
     "_prefab": {
-      "__id__": 42
+      "__id__": 44
     },
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 0,
+      "y": 55.049,
       "z": 0
     },
     "_lrot": {
@@ -392,7 +395,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 220,
+      "width": 120,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -428,7 +431,7 @@
       "b": 0,
       "a": 255
     },
-    "_string": "滑鼠按下左右鍵操控方向",
+    "_string": "滑鼠按下前進",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 20,
@@ -522,7 +525,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 260,
+      "width": 120,
       "height": 50.4
     },
     "_anchorPoint": {
@@ -558,7 +561,7 @@
       "b": 0,
       "a": 255
     },
-    "_string": "滑鼠彈起左右鍵操控跳耀方向",
+    "_string": "滑鼠彈起跳耀",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
     "_actualFontSize": 20,
@@ -849,9 +852,10 @@
     "fileId": "8bJK7NGy9AeJxGlzz6JneW"
   },
   {
-    "__type__": "cc.Button",
+    "__type__": "e60d9bUnalLV5F19LRSbnsn",
     "_name": "",
     "_objFlags": 0,
+    "__editorExtras__": {},
     "node": {
       "__id__": 26
     },
@@ -864,9 +868,9 @@
     "_transition": 2,
     "_normalColor": {
       "__type__": "cc.Color",
-      "r": 214,
-      "g": 214,
-      "b": 214,
+      "r": 255,
+      "g": 255,
+      "b": 255,
       "a": 255
     },
     "_hoverColor": {
@@ -908,14 +912,12 @@
     },
     "_duration": 0.1,
     "_zoomScale": 1.2,
-    "_target": {
-      "__id__": 26
-    },
+    "_target": null,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "0aGlHGH1xLVbGt9i1avcBE"
+    "fileId": "45LC4PYs1J26Nd8+DxDxOh"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -953,6 +955,25 @@
   {
     "__type__": "cc.CompPrefabInfo",
     "fileId": "c6HIaWMXhHi7Hf/Vhr1ioi"
+  },
+  {
+    "__type__": "b5f7cKSYUtAuLv7f7IXsxOe",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 43
+    },
+    "gamePlayButton": null,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "dbTl2k0ANJ+ZlzHB2pfJWQ"
   },
   {
     "__type__": "cc.PrefabInfo",

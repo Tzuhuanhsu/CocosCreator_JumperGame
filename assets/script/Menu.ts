@@ -1,4 +1,5 @@
 import * as cc from "cc"
+import { SoundButton } from "./SoundButton";
 const { ccclass, property } = cc._decorator;
 
 
@@ -7,7 +8,7 @@ const { ccclass, property } = cc._decorator;
 
 export class Menu extends cc.Component
 {
-    @property({ type: cc.Button, tooltip: "Game Play Button" }) gamePlayButton: cc.Button = null
+    @property({ type: SoundButton, tooltip: "Game Play Button" }) gamePlayButton: cc.Button = null
     private gameButtonEvent: () => void = null
 
     //設定遊戲選單按鈕執行事件

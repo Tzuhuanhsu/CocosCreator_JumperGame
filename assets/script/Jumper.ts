@@ -20,12 +20,13 @@ export class Jumper extends Component
 {
     @property({ type: cc.UITransform, tooltip: "jumper body" }) body: cc.UITransform = null;
     @property({ type: cc.Animation, tooltip: "animation" }) animation: cc.Animation = null;
-
+    @property({ type: cc.AudioClip, tooltip: "Jump audio clip" }) jumpAudioClip: cc.AudioClip;
     private jumpState: JumpState = JumpState.Idle;
     private jumpStep: number = 0;
     private jumpTime: number = DEFAULT_JUMP_TIME;
     private currentPosition: Vec3 = new Vec3(0, 0, 0);
     private deltaPosition: Vec3 = new Vec3(0, 0, 0);
+    private audioSource: cc.AudioSource = new cc.AudioSource();
 
     jumpByStep(step: number)
     {
@@ -40,6 +41,7 @@ export class Jumper extends Component
             this.jumpStep = step;
             this.jumpTime = this.animation.getState(JUMP_ANIMATION_CLIP).duration;
             this.animation.play(JUMP_ANIMATION_CLIP)
+            this.audioSource.playOneShot(this.jumpAudioClip);
             this.animation.once(cc.Animation.EventType.FINISHED, () =>
             {
                 this.State = JumpState.Idle;

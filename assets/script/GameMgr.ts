@@ -4,6 +4,7 @@ import { MoveState, Player } from './Player';
 import { Menu } from './Menu';
 import FiniteState from './StateMachine';
 import { STRING } from './Define';
+import { AudioComp } from './AudioComp';
 
 const { ccclass, property } = cc._decorator;
 
@@ -32,10 +33,10 @@ export class GameMgr extends cc.Component
     @property({ type: cc.Node, tooltip: "地板節點" }) FloorNode: cc.Node;
     @property({ type: cc.UIOpacity, tooltip: "遊戲狀態" }) gameStartLabelOpacity: cc.UIOpacity;
     @property({ type: cc.Label, tooltip: "計時器" }) countTimer: cc.Label;
-    @property({ type: cc.Node, tooltip: "Game end menu" }) gameEndMenu: cc.Node;
-    @property({ type: cc.Button, tooltip: "Restart game button" }) restartGameButton: cc.Button;
+    @property({ type: Menu, tooltip: "Game end menu" }) gameEndMenu: Menu;
     @property({ type: cc.Camera, tooltip: "game camera" }) gameCamera: cc.Camera;
     @property({ type: cc.UITransform, tooltip: "click node" }) clickNode: cc.UITransform;
+    @property({ type: AudioComp, tooltip: "遊戲音效模組" }) audioComp: AudioComp;
     // 遊戲狀態機
     private gameStateMachine: FiniteState = new FiniteState(GameState.Idle);
     // 起點位置
@@ -49,7 +50,7 @@ export class GameMgr extends cc.Component
         //檢查設定地板長度
         if (this.floorLength < MIN_FLOOR_LENGTH)
             this.floorLength = MIN_FLOOR_LENGTH;
-        this.gameEndMenu.active = false;
+        this.gameEndMenu.node.active = false;
         this.gameCamera.node.active = false;
         this.clickNode.setContentSize(cc.size(cc.view.getDesignResolutionSize().width * 2, cc.view.getDesignResolutionSize().height));
     }
@@ -72,7 +73,7 @@ export class GameMgr extends cc.Component
                 break;
             case GameState.Playing:
                 if (this.gameStateMachine.isEnter)
-                    this.player.onGameStart();
+                    this.onGameStart();
                 if (this.player.MoveState == MoveState.Moving || this.player.IsJump)
                     this.checkMoveBorder();
                 //計時 and 確認邊界
@@ -93,7 +94,7 @@ export class GameMgr extends cc.Component
     {
         this.menu.node.parent.active = true;
         this.menu.node.active = true;
-        this.gameEndMenu.active = false;
+        this.gameEndMenu.node.active = false;
         this.gameCamera.node.active = false;
         this.player.node.active = false;
         this.gameStartLabelOpacity.node.active = false;
@@ -102,6 +103,7 @@ export class GameMgr extends cc.Component
             this.menu.node.parent.active = false;
             this.gameStateMachine.NextState = GameState.Init;
         });
+        this.audioComp.playBgMusic();
     }
 
     // 遊戲開始
@@ -111,29 +113,45 @@ export class GameMgr extends cc.Component
         this.player.node.active = true;
         this.gameCamera.node.active = true;
         this.gameStartLabelOpacity.node.active = true;
-        this.gameEndMenu.active = false;
+        this.gameEndMenu.node.active = false;
         this.gameAnimation.play(GAME_START_ACTION);
         this.gameAnimation.once(cc.Animation.EventType.FINISHED, () =>
         {
+            this.gameStartLabelOpacity.opacity = 255;
             cc.tween(this.gameStartLabelOpacity)
-                .to(1, { opacity: 0 })
-                .call(() => { this.gameStateMachine.NextState = GameState.Playing; })
+                .to(1.5, { opacity: 100 })
+                .call(() =>
+                {
+                    this.gameStartLabelOpacity.node.active = false;
+                    this.gameStateMachine.NextState = GameState.Playing;
+                    this.audioComp.playGameStartMusic();
+                })
                 .start();
             cc.tween(this.gameStartLabelOpacity.node)
-                .to(1, { worldPosition: this.player.node.getWorldPosition() })
+                .to(1.5, { worldPosition: this.player.node.getWorldPosition() })
                 .start();
         });
+    }
+    // 玩家可以開始操作角色
+    private onGameStart()
+    {
+        this.player.onGameStart();
+        this.clickNode.node.on(cc.Node.EventType.TOUCH_START, this.player.onMouseDown.bind(this.player));
+        this.clickNode.node.on(cc.Node.EventType.TOUCH_END, this.player.onMouseUp.bind(this.player));
+
     }
     //玩家遊戲結束
     private onGameOver()
     {
         this.gameStartLabelOpacity.node.getComponent(cc.Label).string = STRING.GAME_OVER;
+        this.audioComp.playGameOverMusic();
     }
 
     //遊戲勝利
     private onGameWin()
     {
-        this.gameStartLabelOpacity.node.getComponent(cc.Label).string = STRING.WIN;
+        this.gameStartLabelOpacity.node.getComponent(cc.Label).string = `${STRING.WIN} \n 成績是 ${this.getCountTimeFormat(this.gameStateMachine.Elapsed)}`;
+        this.audioComp.playGameWinnerMusic();
     }
 
     //該局遊戲結束
@@ -146,9 +164,9 @@ export class GameMgr extends cc.Component
             .to(1, { worldPosition: this.player.node.getWorldPosition() })
             .call(() =>
             {
-                this.gameEndMenu.active = true;
-                this.gameEndMenu.setWorldPosition(this.player.node.worldPosition.x, this.gameEndMenu.worldPosition.y, 1);
-                this.restartGameButton.node.once(cc.Button.EventType.CLICK, () =>
+                this.gameEndMenu.node.active = true;
+                this.gameEndMenu.node.setWorldPosition(this.player.node.worldPosition.x, this.gameEndMenu.node.worldPosition.y, 1);
+                this.gameEndMenu.setGamePlayButtonEvent(() =>
                 {
                     this.gameStateMachine.NextState = GameState.Idle;
                 });
@@ -186,8 +204,6 @@ export class GameMgr extends cc.Component
         this.generateFloor();
         this.gameStateMachine.NextState = GameState.Play;
         this.countTimer.string = `Time:${this.getCountTimeFormat(0)}`;
-        this.clickNode.node.on(cc.Node.EventType.TOUCH_START, this.player.onMouseDown.bind(this.player));
-        this.clickNode.node.on(cc.Node.EventType.TOUCH_END, this.player.onMouseUp.bind(this.player));
     }
     /**
      * 產生地板
@@ -234,7 +250,7 @@ export class GameMgr extends cc.Component
     //檢查地板與Player關係
     private checkFloorWithPlayer()
     {
-        this.floors.forEach((floor: Floor, index: number) =>
+        this.floors.forEach((floor: Floor) =>
         {
             //面積的1/2為踩踏有效範圍
             const playerDistance = cc.Vec3.distance(this.player.node.worldPosition, floor.node.worldPosition)

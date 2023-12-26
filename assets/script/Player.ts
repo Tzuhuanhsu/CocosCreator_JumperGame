@@ -7,8 +7,10 @@ const { ccclass, property } = _decorator;
 const Default_Move_Time = 0.5;
 //預設血量
 const Default_HP = 1;
+//血量計算基礎值
 const Base_Hit_Value = 0.01;
-
+//移動基礎值
+const Base_Move_Distance = 1.5;
 export enum MoveState
 {
     Idle = 0,
@@ -23,6 +25,9 @@ export class Player extends Component
     @property({ type: cc.ProgressBar, tooltip: "HP Bar" }) hpBar: cc.ProgressBar;
     @property({ type: cc.Color, tooltip: "Hit Color" }) hitColor: cc.Color;
     @property({ type: cc.Sprite, tooltip: "Body Sprite" }) bodySprite: cc.Sprite;
+    @property({ type: cc.AudioClip, tooltip: "Running sound" }) runningAudioClip: cc.AudioClip;
+    @property({ type: cc.AudioClip, tooltip: "Hit sound" }) hitAudioClip: cc.AudioClip;
+    @property({ type: cc.AudioSource, tooltip: "player audio source" }) audioSource: cc.AudioSource;
     private moveTime: number = Default_Move_Time;
     private step: number = 0;
     private currentTime: number = 0;
@@ -33,6 +38,7 @@ export class Player extends Component
     private moveState: MoveState = MoveState.Idle
     private originalColor: cc.Color = null;
 
+
     start()
     {
         this.originalColor = this.bodySprite.color.clone();
@@ -42,7 +48,7 @@ export class Player extends Component
     onHit(distance: number)
     {
         //傷害公式:基礎傷害 * 距離 * 0.1
-        const totalHitValue = Base_Hit_Value * distance * 0.1;
+        const totalHitValue = Base_Hit_Value * distance * 0.05;
         this.hpBar.progress -= totalHitValue;
         cc.tween(this.bodySprite)
             .to(0.5, { color: this.hitColor })
@@ -51,6 +57,7 @@ export class Player extends Component
                 this.bodySprite.color = this.originalColor;
             })
             .start();
+        this.audioSource.playOneShot(this.hitAudioClip);
     }
 
     get HP(): number
@@ -68,11 +75,11 @@ export class Player extends Component
     {
         this.moveState = MoveState.Idle;
     }
+    //game End
     onGameEnd()
     {
-        // cc.input.off(cc.Input.EventType.MOUSE_UP);
-        // cc.input.off(cc.Input.EventType.MOUSE_DOWN);
         this.moveState = MoveState.End;
+        this.stopMoveSound();
     }
 
     update(deltaTime: number)
@@ -81,7 +88,7 @@ export class Player extends Component
         if (this.moveState == MoveState.Moving)
         {
             this.currentTime += deltaTime;
-            if (this.moveEnd())
+            if (this.isMoveEnd())
             {
                 this.moveState = MoveState.Idle;
                 this.moveByStep(this.step);
@@ -101,22 +108,19 @@ export class Player extends Component
      * Mouse Event Listener
      * @param event 
      */
-    onMouseUp(event: EventMouse)
+    onMouseUp()
     {
 
-        const left: number = 0
-        const right: number = 2
         this.moveState = MoveState.End;
-        this.jumper.jumpByStep(2);
+        this.stopMoveSound();
+        this.jumper.jumpByStep(Base_Move_Distance);
     }
 
     //Mouse down
-    onMouseDown(event: cc.EventMouse)
+    onMouseDown()
     {
-        const left: number = 0
-        const right: number = 2
         this.moveState = MoveState.Idle;
-        this.moveByStep(1);
+        this.moveByStep(Base_Move_Distance);
     }
 
     moveByStep(step: number)
@@ -129,11 +133,30 @@ export class Player extends Component
         this.step = step;
         this.currentTime = 0;
         this.speed = step * this.body.contentSize.width * 1.2 / this.moveTime;
+        this.playMoveSound();
         Vec3.add(this.targetPosition, this.node.getPosition(this.currentPosition), cc.v3(step * this.body.contentSize.width, 0, 0));
+    }
+    //播放移動音效
+    private playMoveSound()
+    {
+        if (this.audioSource.playing)
+            return;
+        if (this.audioSource.clip != this.runningAudioClip)
+            this.audioSource.clip = this.runningAudioClip;
+        else
+            this.audioSource.currentTime = 0;
+
+        this.audioSource.play();
+
+    }
+    //停止播放移動音效
+    private stopMoveSound()
+    {
+        this.audioSource.stop();
     }
 
     //移動結束
-    moveEnd(): boolean
+    isMoveEnd(): boolean
     {
         return this.currentTime > this.moveTime;
     }
