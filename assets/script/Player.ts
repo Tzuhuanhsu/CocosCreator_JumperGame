@@ -27,7 +27,7 @@ export class Player extends Component
     @property({ type: cc.Sprite, tooltip: "Body Sprite" }) bodySprite: cc.Sprite;
     @property({ type: cc.AudioClip, tooltip: "Running sound" }) runningAudioClip: cc.AudioClip;
     @property({ type: cc.AudioClip, tooltip: "Hit sound" }) hitAudioClip: cc.AudioClip;
-    @property({ type: cc.AudioSource, tooltip: "player audio source" }) audioSource: cc.AudioSource;
+
     private moveTime: number = Default_Move_Time;
     private step: number = 0;
     private currentTime: number = 0;
@@ -37,7 +37,7 @@ export class Player extends Component
     private targetPosition: Vec3 = new Vec3(0, 0, 0);
     private moveState: MoveState = MoveState.Idle
     private originalColor: cc.Color = null;
-
+    private audioSource: cc.AudioSource = new cc.AudioSource();
 
     start()
     {

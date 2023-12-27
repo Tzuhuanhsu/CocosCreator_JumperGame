@@ -18,6 +18,14 @@ export class Floor extends cc.Component
 
     private end: boolean = false;
     private trap: boolean = false;
+
+    //初始化地板
+    init()
+    {
+        this.isEnd = false;
+        this.isTrap = false;
+    }
+
     //是否為終點
     set isEnd(end: boolean)
     {

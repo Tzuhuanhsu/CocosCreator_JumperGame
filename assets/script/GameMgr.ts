@@ -5,6 +5,7 @@ import { Menu } from './Menu';
 import FiniteState from './StateMachine';
 import { STRING } from './Define';
 import { AudioComp } from './AudioComp';
+import { Fireworks } from './Fireworks';
 
 const { ccclass, property } = cc._decorator;
 
@@ -37,6 +38,7 @@ export class GameMgr extends cc.Component
     @property({ type: cc.Camera, tooltip: "game camera" }) gameCamera: cc.Camera;
     @property({ type: cc.UITransform, tooltip: "click node" }) clickNode: cc.UITransform;
     @property({ type: AudioComp, tooltip: "遊戲音效模組" }) audioComp: AudioComp;
+    @property({ type: Fireworks, tooltip: "煙火模組" }) firework: Fireworks;
     // 遊戲狀態機
     private gameStateMachine: FiniteState = new FiniteState(GameState.Idle);
     // 起點位置
@@ -54,7 +56,7 @@ export class GameMgr extends cc.Component
         this.gameCamera.node.active = false;
         this.clickNode.setContentSize(cc.size(cc.view.getDesignResolutionSize().width * 2, cc.view.getDesignResolutionSize().height));
     }
-    update(deltaTime: number)
+    update()
     {
         this.gameStateMachine.Trigger();
         switch (this.gameStateMachine.Current)
@@ -104,6 +106,7 @@ export class GameMgr extends cc.Component
             this.gameStateMachine.NextState = GameState.Init;
         });
         this.audioComp.playBgMusic();
+        this.firework.stop();
     }
 
     // 遊戲開始
@@ -152,6 +155,7 @@ export class GameMgr extends cc.Component
     {
         this.gameStartLabelOpacity.node.getComponent(cc.Label).string = `${STRING.WIN} \n 成績是 ${this.getCountTimeFormat(this.gameStateMachine.Elapsed)}`;
         this.audioComp.playGameWinnerMusic();
+        this.firework.play();
     }
 
     //該局遊戲結束
@@ -215,35 +219,31 @@ export class GameMgr extends cc.Component
         for (let i = 0; i < this.floorLength; i++)
         {
             let floor: Floor = this.floors[i] != null ? this.floors[i] : this.spawnFloor();
-            if (floor)
+            floor.init();
+            floor.node.setPosition(i * floor.node.getComponent(cc.UITransform).contentSize.width, 0, 0);
+            this.FloorNode.addChild(floor.node);
+
+            if (i < 2)
             {
-                floor.node.setPosition(i * floor.node.getComponent(cc.UITransform).contentSize.width, 0, 0);
-                this.FloorNode.addChild(floor.node);
-
-                if (i < 2)
-                {
-                    floor.isTrap = false;
-                    if (i == 0)
-                        //取出起始邊界
-                        floor.node.getWorldPosition(this.stPosition);
-                }
-                else if (i == this.floorLength - 1)
-                {
-                    floor.isTrap = false;
-                    floor.isEnd = true;
-                    //取出終點邊界
-                    floor.node.getWorldPosition(this.endPosition);
-                }
-                else if (this.floors[i - 1]?.isTrap === true)
-                {
-                    floor.isTrap = false;
-                }
-                else
-                {
-                    floor.isTrap = Math.floor(Math.random() * 2) == FloorType.Trap ? true : false;
-                }
-
-                this.floors.push(floor);
+                floor.isTrap = false;
+                if (i == 0)
+                    //取出起始邊界
+                    floor.node.getWorldPosition(this.stPosition);
+            }
+            else if (i == this.floorLength - 1)
+            {
+                floor.isTrap = false;
+                floor.isEnd = true;
+                //取出終點邊界
+                floor.node.getWorldPosition(this.endPosition);
+            }
+            else if (this.floors[i - 1]?.isTrap === true)
+            {
+                floor.isTrap = false;
+            }
+            else
+            {
+                floor.isTrap = Math.floor(Math.random() * 2) == FloorType.Trap ? true : false;
             }
         }
     }
@@ -267,7 +267,7 @@ export class GameMgr extends cc.Component
                     if (floor.isEnd)
                         this.onGameWin();
                     //notify machine game end
-                    this.gameStateMachine.NextState = GameState.End;
+                    this.gameStateMachine.ForceTransit(GameState.End);
                 }
             }
         });
@@ -297,6 +297,7 @@ export class GameMgr extends cc.Component
         }
         let floor: Floor = cc.instantiate(this.floorPrefab).getComponent(Floor);
         floor.isEnd = false;
+        this.floors.push(floor);
         return floor;
     }
 }
