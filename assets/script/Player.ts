@@ -2,13 +2,13 @@
 import { _decorator, Component, EventMouse, Vec3 } from 'cc';
 import { Jumper } from './Jumper';
 import * as cc from "cc";
+import { IPlayer } from './Define';
 
 const { ccclass, property } = _decorator;
 const Default_Move_Time = 0.5;
 //預設血量
 const Default_HP = 1;
-//血量計算基礎值
-const Base_Hit_Value = 0.01;
+
 //移動基礎值
 const Base_Move_Distance = 1.5;
 export enum MoveState
@@ -18,7 +18,7 @@ export enum MoveState
     End = 2
 }
 @ccclass('player')
-export class Player extends Component
+export class Player extends Component implements IPlayer
 {
     @property({ type: Jumper, tooltip: "Player Body" }) jumper: Jumper;
     @property({ type: cc.UITransform, tooltip: "body" }) body: cc.UITransform;
@@ -45,11 +45,9 @@ export class Player extends Component
     }
 
     //受到攻擊
-    onHit(distance: number)
+    onHit(attackVal: number)
     {
-        //傷害公式:基礎傷害 * 距離 * 0.1
-        const totalHitValue = Base_Hit_Value * distance * 0.05;
-        this.hpBar.progress -= totalHitValue;
+        this.hpBar.progress -= attackVal;
         cc.tween(this.bodySprite)
             .to(0.5, { color: this.hitColor })
             .call(() =>
@@ -166,7 +164,7 @@ export class Player extends Component
         return this.moveState;
     }
     //是否跳耀中
-    get IsJump(): boolean
+    IsJump(): boolean
     {
         return this.jumper.IsJump;
     }

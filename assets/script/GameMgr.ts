@@ -76,7 +76,7 @@ export class GameMgr extends cc.Component
             case GameState.Playing:
                 if (this.gameStateMachine.isEnter)
                     this.onGameStart();
-                if (this.player.MoveState == MoveState.Moving || this.player.IsJump)
+                if (this.player.MoveState == MoveState.Moving || this.player.IsJump())
                     this.checkMoveBorder();
                 //計時 and 確認邊界
                 this.countTime();
@@ -148,6 +148,7 @@ export class GameMgr extends cc.Component
     {
         this.gameStartLabelOpacity.node.getComponent(cc.Label).string = STRING.GAME_OVER;
         this.audioComp.playGameOverMusic();
+        this.gameStateMachine.NextState = GameState.End;
     }
 
     //遊戲勝利
@@ -156,6 +157,7 @@ export class GameMgr extends cc.Component
         this.gameStartLabelOpacity.node.getComponent(cc.Label).string = `${STRING.WIN} \n 成績是 ${this.getCountTimeFormat(this.gameStateMachine.Elapsed)}`;
         this.audioComp.playGameWinnerMusic();
         this.firework.play();
+        this.gameStateMachine.NextState = GameState.End;
     }
 
     //該局遊戲結束
@@ -254,21 +256,14 @@ export class GameMgr extends cc.Component
         {
             //面積的1/2為踩踏有效範圍
             const playerDistance = cc.Vec3.distance(this.player.node.worldPosition, floor.node.worldPosition)
-            if (playerDistance < (this.player.BodySize.width / 2))
+            if (playerDistance < (floor.Size.width / 2))
             {
-                if (floor.isTrap && this.player.IsJump == false)
-                    this.player.onHit(playerDistance);
+                floor.attack(this.player)
 
-
-                if (floor.isEnd || this.player.HP <= 0)
-                {
-                    if (this.player.HP <= 0)
-                        this.onGameOver();
-                    if (floor.isEnd)
-                        this.onGameWin();
-                    //notify machine game end
-                    this.gameStateMachine.ForceTransit(GameState.End);
-                }
+                if (this.player.HP <= 0)
+                    this.onGameOver();
+                if (floor.isEnd)
+                    this.onGameWin();
             }
         });
     }

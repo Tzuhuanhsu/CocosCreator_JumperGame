@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Floor",
+    "_name": "Trap",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -299,9 +299,6 @@
     },
     "rootSprite": {
       "__id__": 10
-    },
-    "transForm": {
-      "__id__": 8
     },
     "_id": ""
   },
