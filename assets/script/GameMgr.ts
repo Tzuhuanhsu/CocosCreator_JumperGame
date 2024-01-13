@@ -75,7 +75,7 @@ export class GameMgr extends cc.Component
             case GameState.Playing:
                 if (this.gameStateMachine.isEnter)
                     this.onGameStart();
-                if (this.player.MoveState == MoveState.Moving || this.player.IsJump())
+                if (this.player.MoveState == MoveState.Moving || this.player.CanHit())
                     this.checkMoveBorder();
                 //計時 and 確認邊界
                 this.player.time = this.gameStateMachine.Elapsed;

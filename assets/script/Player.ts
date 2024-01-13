@@ -2,7 +2,7 @@
 import { _decorator, Component, EventMouse, Vec3 } from 'cc';
 import { Jumper } from './Jumper';
 import * as cc from "cc";
-import { IPlayer } from './Define';
+import { IFloorEnemy } from './Define';
 import { PlayerInfo } from './PlayerInfo';
 
 const { ccclass, property } = _decorator;
@@ -19,7 +19,7 @@ export enum MoveState
     End = 2
 }
 @ccclass('player')
-export class Player extends Component implements IPlayer
+export class Player extends Component implements IFloorEnemy
 {
     @property({ type: Jumper, tooltip: "Player Body" }) jumper: Jumper;
     @property({ type: cc.UITransform, tooltip: "body" }) body: cc.UITransform;
@@ -181,7 +181,7 @@ export class Player extends Component implements IPlayer
         return this.moveState;
     }
     //是否跳耀中
-    IsJump(): boolean
+    CanHit(): boolean
     {
         return this.jumper.IsJump;
     }

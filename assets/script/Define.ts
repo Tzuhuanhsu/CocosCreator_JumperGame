@@ -6,8 +6,8 @@ export const STRING = {
 }
 
 
-export interface IPlayer extends cc.Component
+export interface IFloorEnemy extends cc.Component
 {
     onHit(attackVal: number): void;
-    IsJump(): boolean;
+    CanHit(): boolean;
 }

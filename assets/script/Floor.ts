@@ -1,5 +1,5 @@
 import * as cc from "cc"
-import { IPlayer } from "./Define";
+import { IFloorEnemy } from "./Define";
 
 const { ccclass, property } = cc._decorator
 
@@ -31,10 +31,10 @@ export class Floor extends cc.Component
         this.isTrap = false;
     }
 
-    public attack(player: IPlayer)
+    public attack(player: IFloorEnemy)
     {
         // 跳耀中
-        if (player.IsJump())
+        if (player.CanHit())
             return;
         // 非陷阱
         if (this.trap == false)
