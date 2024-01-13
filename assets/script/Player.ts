@@ -3,6 +3,7 @@ import { _decorator, Component, EventMouse, Vec3 } from 'cc';
 import { Jumper } from './Jumper';
 import * as cc from "cc";
 import { IPlayer } from './Define';
+import { PlayerInfo } from './PlayerInfo';
 
 const { ccclass, property } = _decorator;
 const Default_Move_Time = 0.5;
@@ -22,7 +23,7 @@ export class Player extends Component implements IPlayer
 {
     @property({ type: Jumper, tooltip: "Player Body" }) jumper: Jumper;
     @property({ type: cc.UITransform, tooltip: "body" }) body: cc.UITransform;
-    @property({ type: cc.ProgressBar, tooltip: "HP Bar" }) hpBar: cc.ProgressBar;
+    @property({ type: PlayerInfo, tooltip: "角色資訊" }) playerInfo: PlayerInfo;
     @property({ type: cc.Color, tooltip: "Hit Color" }) hitColor: cc.Color;
     @property({ type: cc.Sprite, tooltip: "Body Sprite" }) bodySprite: cc.Sprite;
     @property({ type: cc.AudioClip, tooltip: "Running sound" }) runningAudioClip: cc.AudioClip;
@@ -47,7 +48,7 @@ export class Player extends Component implements IPlayer
     //受到攻擊
     onHit(attackVal: number)
     {
-        this.hpBar.progress -= attackVal;
+        this.playerInfo.HP -= attackVal;
         cc.tween(this.bodySprite)
             .to(0.5, { color: this.hitColor })
             .call(() =>
@@ -58,16 +59,32 @@ export class Player extends Component implements IPlayer
         this.audioSource.playOneShot(this.hitAudioClip);
     }
 
+    set name(name: string)
+    {
+        this.playerInfo.name = name;
+    }
+
+    set time(time: number)
+    {
+        this.playerInfo.countTime = time;
+    }
+
+    getFormatCountTime(): string
+    {
+        return this.playerInfo.getFormateTime();
+    }
+
     get HP(): number
     {
-        return this.hpBar.progress;
+        return this.playerInfo.HP;
     }
     //Game init
     onGameInit()
     {
         this.node.setPosition(cc.Vec3.ZERO);
-        this.hpBar.progress = Default_HP;
+        this.playerInfo.HP = Default_HP;
     }
+
     //game start
     onGameStart()
     {

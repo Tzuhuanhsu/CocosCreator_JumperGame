@@ -33,7 +33,6 @@ export class GameMgr extends cc.Component
     @property({ type: cc.Animation, tooltip: "GameAction" }) gameAnimation: cc.Animation = null;
     @property({ type: cc.Node, tooltip: "地板節點" }) FloorNode: cc.Node;
     @property({ type: cc.UIOpacity, tooltip: "遊戲狀態" }) gameStartLabelOpacity: cc.UIOpacity;
-    @property({ type: cc.Label, tooltip: "計時器" }) countTimer: cc.Label;
     @property({ type: Menu, tooltip: "Game end menu" }) gameEndMenu: Menu;
     @property({ type: cc.Camera, tooltip: "game camera" }) gameCamera: cc.Camera;
     @property({ type: cc.UITransform, tooltip: "click node" }) clickNode: cc.UITransform;
@@ -79,7 +78,7 @@ export class GameMgr extends cc.Component
                 if (this.player.MoveState == MoveState.Moving || this.player.IsJump())
                     this.checkMoveBorder();
                 //計時 and 確認邊界
-                this.countTime();
+                this.player.time = this.gameStateMachine.Elapsed;
                 this.checkFloorWithPlayer();
                 break;
             case GameState.End:
@@ -104,6 +103,7 @@ export class GameMgr extends cc.Component
         {
             this.menu.node.parent.active = false;
             this.gameStateMachine.NextState = GameState.Init;
+            this.player.name = this.menu.PlayerName;
         });
         this.audioComp.playBgMusic();
         this.firework.stop();
@@ -154,7 +154,7 @@ export class GameMgr extends cc.Component
     //遊戲勝利
     private onGameWin()
     {
-        this.gameStartLabelOpacity.node.getComponent(cc.Label).string = `${STRING.WIN} \n 成績是 ${this.getCountTimeFormat(this.gameStateMachine.Elapsed)}`;
+        this.gameStartLabelOpacity.node.getComponent(cc.Label).string = `${STRING.WIN} \n 成績是 ${this.player.getFormatCountTime()}`;
         this.audioComp.playGameWinnerMusic();
         this.firework.play();
         this.gameStateMachine.NextState = GameState.End;
@@ -184,23 +184,7 @@ export class GameMgr extends cc.Component
         this.player.onGameEnd();
     }
 
-    private countTime()
-    {
-        this.countTimer.string = `Time:${this.getCountTimeFormat(this.gameStateMachine.Elapsed)}`
-    }
 
-    private PrefixInteger(num: number, length: number)
-    {
-        return (Array(length).join('0') + num).slice(-length);
-    }
-
-    private getCountTimeFormat(time: number): string
-    {
-        const yy = this.PrefixInteger(Math.floor(time / (60 * 24)), 2);
-        const mm = this.PrefixInteger(Math.floor(time / 60), 2);
-        const ss = this.PrefixInteger(Math.floor(time), 2);
-        return `${yy}:${mm}:${ss}`;
-    }
 
     //game start
     private onGameInit()
@@ -209,7 +193,8 @@ export class GameMgr extends cc.Component
         this.player.onGameInit();
         this.generateFloor();
         this.gameStateMachine.NextState = GameState.Play;
-        this.countTimer.string = `Time:${this.getCountTimeFormat(0)}`;
+        this.player.time = this.gameStateMachine.Elapsed;
+
     }
     /**
      * 產生地板
