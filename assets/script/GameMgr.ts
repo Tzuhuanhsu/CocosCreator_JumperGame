@@ -16,13 +16,15 @@ enum GameState
     Init,
     Play,
     Playing,
+    LevelUp,
     End
 }
 //遊戲狀態動畫
 const GAME_START_ACTION = "gameStart";
 //地板最小長度
 const MIN_FLOOR_LENGTH = 3;
-
+// 每次增加的地板難度
+const FLOOR_LEVEL_UP_INTERVAL = 10;
 @ccclass("GameMgr")
 export class GameMgr extends cc.Component
 {
@@ -38,6 +40,7 @@ export class GameMgr extends cc.Component
     @property({ type: cc.UITransform, tooltip: "click node" }) clickNode: cc.UITransform;
     @property({ type: AudioComp, tooltip: "遊戲音效模組" }) audioComp: AudioComp;
     @property({ type: Fireworks, tooltip: "煙火模組" }) firework: Fireworks;
+
     // 遊戲狀態機
     private gameStateMachine: FiniteState = new FiniteState(GameState.Idle);
     // 起點位置
@@ -46,11 +49,16 @@ export class GameMgr extends cc.Component
     private endPosition: cc.Vec3 = new cc.Vec3(0, 0, 0);
     //Map floors
     private floors: Floor[] = [];
+    //isWinner?
+    private isWinner: boolean = false;
+    // init floor length
+    private initFloorLength: number = 0;
     start()
     {
         //檢查設定地板長度
         if (this.floorLength < MIN_FLOOR_LENGTH)
             this.floorLength = MIN_FLOOR_LENGTH;
+        this.initFloorLength = this.floorLength;
         this.gameEndMenu.node.active = false;
         this.gameCamera.node.active = false;
         this.clickNode.setContentSize(cc.size(cc.view.getDesignResolutionSize().width * 2, cc.view.getDesignResolutionSize().height));
@@ -85,6 +93,10 @@ export class GameMgr extends cc.Component
                 if (this.gameStateMachine.isEnter)
                     this.onGameEnd();
                 break;
+            case GameState.LevelUp:
+                if (this.gameStateMachine.isEnter)
+                    this.onGameLevelUp();
+                break;
             default:
                 console.error("On Handle game state", this.gameStateMachine.Current);
                 break
@@ -93,6 +105,7 @@ export class GameMgr extends cc.Component
     // 遊戲準備開始
     private onGameIdle()
     {
+        this.floorLength = this.initFloorLength;
         this.menu.node.parent.active = true;
         this.menu.node.active = true;
         this.gameEndMenu.node.active = false;
@@ -105,8 +118,7 @@ export class GameMgr extends cc.Component
             this.gameStateMachine.NextState = GameState.Init;
             this.player.name = this.menu.PlayerName;
         });
-        this.audioComp.playBgMusic();
-        this.firework.stop();
+        this.player.init();
     }
 
     // 遊戲開始
@@ -117,6 +129,8 @@ export class GameMgr extends cc.Component
         this.gameCamera.node.active = true;
         this.gameStartLabelOpacity.node.active = true;
         this.gameEndMenu.node.active = false;
+        this.audioComp.playBgMusic();
+        this.firework.stop();
         this.gameAnimation.play(GAME_START_ACTION);
         this.gameAnimation.once(cc.Animation.EventType.FINISHED, () =>
         {
@@ -148,15 +162,19 @@ export class GameMgr extends cc.Component
     {
         this.gameStartLabelOpacity.node.getComponent(cc.Label).string = STRING.GAME_OVER;
         this.audioComp.playGameOverMusic();
+        this.isWinner = false;
         this.gameStateMachine.NextState = GameState.End;
     }
 
     //遊戲勝利
     private onGameWin()
     {
-        this.gameStartLabelOpacity.node.getComponent(cc.Label).string = `${STRING.WIN} \n 成績是 ${this.player.getFormatCountTime()}`;
+        this.player.setAccumulateLength(this.player.getAccumulateLength() + this.floorLength);
+        this.player.setAccumulateTime(this.player.getAccumulateTime() + this.player.time);
+        this.gameStartLabelOpacity.node.getComponent(cc.Label).string = `${STRING.WIN} \n 成績是:${Math.floor(this.floorLength / this.player.time)}`;
         this.audioComp.playGameWinnerMusic();
         this.firework.play();
+        this.isWinner = true;
         this.gameStateMachine.NextState = GameState.End;
     }
 
@@ -168,14 +186,23 @@ export class GameMgr extends cc.Component
 
         cc.tween(this.gameStartLabelOpacity.node)
             .to(1, { worldPosition: this.player.node.getWorldPosition() })
+            .delay(3)
             .call(() =>
             {
-                this.gameEndMenu.node.active = true;
-                this.gameEndMenu.node.setWorldPosition(this.player.node.worldPosition.x, this.gameEndMenu.node.worldPosition.y, 1);
-                this.gameEndMenu.setGamePlayButtonEvent(() =>
+                if (this.isWinner == false)
                 {
-                    this.gameStateMachine.NextState = GameState.Idle;
-                });
+                    this.gameEndMenu.node.active = true;
+                    this.gameEndMenu.node.setWorldPosition(this.player.node.worldPosition.x, this.gameEndMenu.node.worldPosition.y, 1);
+                    this.gameEndMenu.setGamePlayButtonEvent(() =>
+                    {
+                        this.gameStateMachine.NextState = GameState.Idle;
+                    });
+                }
+                else
+                {
+                    this.gameStateMachine.NextState = GameState.LevelUp;
+                }
+
             })
             .start();
         this.clickNode.node.active = false;
@@ -184,7 +211,15 @@ export class GameMgr extends cc.Component
         this.player.onGameEnd();
     }
 
-
+    private onGameLevelUp()
+    {
+        this.floorLength = this.floorLength + FLOOR_LEVEL_UP_INTERVAL;;
+        this.gameStartLabelOpacity.node.getComponent(cc.Label).string = STRING.GAME_START;
+        this.player.onGameInit();
+        this.generateFloor();
+        this.player.time = 0;
+        this.gameStateMachine.NextState = GameState.Play;
+    }
 
     //game start
     private onGameInit()

@@ -7,8 +7,32 @@ export class PlayerInfo extends cc.Component
 {
     @property({ type: cc.ProgressBar, tooltip: "HP Bar" }) hpBar: cc.ProgressBar;
     @property({ type: cc.Label, tooltip: "資訊欄位" }) infoLabel: cc.Label;
+    // 累積長度
+    private accumulateLength: number = 0;
+    // 累積時間
+    private accumulateTime: number = 0;
     private playerName: string = "";
     private time: number = 0;
+
+    set AccumulateLength(length: number)
+    {
+        this.accumulateLength = length;
+    }
+
+    get AccumulateLength(): number
+    {
+        return this.accumulateLength;
+    }
+
+    set AccumulateTime(time: number)
+    {
+        this.accumulateTime = time;
+    }
+
+    get AccumulateTime(): number
+    {
+        return this.accumulateTime;
+    }
 
     set HP(hp: number)
     {
@@ -51,8 +75,6 @@ export class PlayerInfo extends cc.Component
     {
         this.infoLabel.string = `Player:${this.name}\nTime:${this.getCountTimeFormat(this.countTime)}`;
     }
-
-
 
     private PrefixInteger(num: number, length: number)
     {

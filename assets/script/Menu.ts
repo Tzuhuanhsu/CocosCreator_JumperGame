@@ -28,7 +28,7 @@ export class Menu extends cc.Component
 
             if (this.gameButtonEvent)
             {
-                if (this.playerNameEditBox)
+                if (this.playerNameEditBox && this.playerNameEditBox.string != "")
                     this.PlayerName = this.playerNameEditBox.string;
                 this.gameButtonEvent();
             }

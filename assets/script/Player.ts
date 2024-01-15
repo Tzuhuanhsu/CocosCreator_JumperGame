@@ -68,6 +68,29 @@ export class Player extends Component implements IFloorEnemy
     {
         this.playerInfo.countTime = time;
     }
+    get time(): number
+    {
+        return this.playerInfo.countTime;
+    }
+    setAccumulateLength(length: number)
+    {
+        this.playerInfo.AccumulateLength = length;
+    }
+
+    getAccumulateLength(): number
+    {
+        return this.playerInfo.AccumulateLength;
+    }
+
+    setAccumulateTime(time: number)
+    {
+        this.playerInfo.AccumulateTime = time;
+    }
+
+    getAccumulateTime(): number
+    {
+        return this.playerInfo.AccumulateTime;
+    }
 
     getFormatCountTime(): string
     {
@@ -78,11 +101,18 @@ export class Player extends Component implements IFloorEnemy
     {
         return this.playerInfo.HP;
     }
+
+    init()
+    {
+        this.playerInfo.HP = Default_HP;
+        this.playerInfo.AccumulateTime = 0;
+        this.playerInfo.AccumulateLength = 0;
+    }
+
     //Game init
     onGameInit()
     {
         this.node.setPosition(cc.Vec3.ZERO);
-        this.playerInfo.HP = Default_HP;
     }
 
     //game start
