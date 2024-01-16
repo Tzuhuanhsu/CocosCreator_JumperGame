@@ -28,7 +28,7 @@ export class Player extends Component implements IFloorEnemy
     @property({ type: cc.Sprite, tooltip: "Body Sprite" }) bodySprite: cc.Sprite;
     @property({ type: cc.AudioClip, tooltip: "Running sound" }) runningAudioClip: cc.AudioClip;
     @property({ type: cc.AudioClip, tooltip: "Hit sound" }) hitAudioClip: cc.AudioClip;
-
+    @property({ type: cc.AudioSource, tooltip: "AudioSource" }) audioSource: cc.AudioSource;
     private moveTime: number = Default_Move_Time;
     private step: number = 0;
     private currentTime: number = 0;
@@ -38,7 +38,7 @@ export class Player extends Component implements IFloorEnemy
     private targetPosition: Vec3 = new Vec3(0, 0, 0);
     private moveState: MoveState = MoveState.Idle
     private originalColor: cc.Color = null;
-    private audioSource: cc.AudioSource = new cc.AudioSource();
+
 
     start()
     {
@@ -62,6 +62,11 @@ export class Player extends Component implements IFloorEnemy
     set name(name: string)
     {
         this.playerInfo.name = name;
+    }
+
+    get name(): string
+    {
+        return this.playerInfo.name;
     }
 
     set time(time: number)
@@ -190,7 +195,6 @@ export class Player extends Component implements IFloorEnemy
             this.audioSource.clip = this.runningAudioClip;
         else
             this.audioSource.currentTime = 0;
-
         this.audioSource.play();
 
     }

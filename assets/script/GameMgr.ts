@@ -6,6 +6,7 @@ import FiniteState from './StateMachine';
 import { STRING } from './Define';
 import { AudioComp } from './AudioComp';
 import { Fireworks } from './Fireworks';
+import { Rank } from './Rank';
 
 const { ccclass, property } = cc._decorator;
 
@@ -40,6 +41,7 @@ export class GameMgr extends cc.Component
     @property({ type: cc.UITransform, tooltip: "click node" }) clickNode: cc.UITransform;
     @property({ type: AudioComp, tooltip: "遊戲音效模組" }) audioComp: AudioComp;
     @property({ type: Fireworks, tooltip: "煙火模組" }) firework: Fireworks;
+    @property({ type: Rank, tooltip: "Rank" }) rank: Rank;
 
     // 遊戲狀態機
     private gameStateMachine: FiniteState = new FiniteState(GameState.Idle);
@@ -191,11 +193,17 @@ export class GameMgr extends cc.Component
             {
                 if (this.isWinner == false)
                 {
-                    this.gameEndMenu.node.active = true;
-                    this.gameEndMenu.node.setWorldPosition(this.player.node.worldPosition.x, this.gameEndMenu.node.worldPosition.y, 1);
-                    this.gameEndMenu.setGamePlayButtonEvent(() =>
+                    this.rank.node.setWorldPosition(this.player.node.worldPosition);
+                    this.rank.insertData(this.player.name, this.player.time);
+                    this.rank.show();
+                    this.rank.setOnCloseEvent(() =>
                     {
-                        this.gameStateMachine.NextState = GameState.Idle;
+                        this.gameEndMenu.node.active = true;
+                        this.gameEndMenu.node.setWorldPosition(this.player.node.worldPosition.x, this.gameEndMenu.node.worldPosition.y, 1);
+                        this.gameEndMenu.setGamePlayButtonEvent(() =>
+                        {
+                            this.gameStateMachine.NextState = GameState.Idle;
+                        });
                     });
                 }
                 else
